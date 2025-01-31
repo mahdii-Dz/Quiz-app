@@ -14,7 +14,6 @@ function fetchApi(){
     .then(respond => respond.json())
     .then(data => {
         if(data.response_code == 0){
-            console.log(data);
             apiData = data;
             showQuestions();
         }
