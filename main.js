@@ -1,3 +1,96 @@
+let questionsElement = document.getElementById('question');
+let answersContainer = document.getElementById('btns-container');
+let nextBtn = document.getElementById('next-btn');
+let i = 0;
+let score = 0;
+let apiData ;
+
+function startQuiz(){
+    answersContainer.style.display = 'block';
+    showQuestions();
+}
+const showQuestions = () =>{
+    resetState()
+    fetch('https://opentdb.com/api.php?amount=10&type=multiple')
+    .then(respond => respond.json())
+    .then(data => {
+            if(data.response_code == 0){
+                console.log(data);
+                apiData = data;
+                let currentQuestion = data.results[i];
+                questionsElement.innerHTML = `${i+1}. ${currentQuestion.question}`;
+                let allAnswers = [...currentQuestion.incorrect_answers, currentQuestion.correct_answer]
+                allAnswers.sort( ()=> Math.random() -0.5 );
+    
+                allAnswers.forEach(answer => {
+                    const button = document.createElement('button');
+                    button.innerText = answer;
+                    button.classList.add('btn');
+                    answersContainer.appendChild(button);
+                    if(answer === currentQuestion.correct_answer){
+                        button.dataset.correct = 'true';
+                    }
+                    button.addEventListener('click',selectAnswer)
+                })
+            }
+    })
+    .catch(error => console.error('Error fetching data:', error));
+}
+
+function resetState(){
+    nextBtn.style.display = 'none';
+    while(answersContainer.firstChild){
+        answersContainer.removeChild(answersContainer.firstChild);
+    }
+}
+
+function selectAnswer(e){
+    let selectedBtn = e.target;
+    let isCorrect = selectedBtn.dataset.correct === 'true';
+    if(isCorrect){
+        score++;
+        selectedBtn.classList.add('correct');
+    }
+    else{
+        selectedBtn.classList.add('incorrect');
+    }
+    Array.from(answersContainer.children).forEach(button =>{
+        if(button.dataset.correct === 'true'){
+            button.classList.add('correct')
+        }
+        button.disabled = true;
+    })
+    nextBtn.style.display = 'block';
+}
+
+function showScore(){
+    answersContainer.style.display = 'none';
+    questionsElement.innerHTML = `you scored ${score} out of ${apiData.results.length}`;
+    nextBtn.innerText = 'Restart Quiz';
+    nextBtn.style.display = 'block';
+}
+
+function handleNextBtn(){
+    i++;
+    if(i < apiData.results.length){
+        showQuestions()
+    }
+    else{
+        showScore()
+    }
+}
+nextBtn.addEventListener('click',()=>{
+    if(i < apiData.results.length){
+        handleNextBtn()
+    }
+    else{
+        i = 0;
+        score =0;
+        startQuiz();
+    }
+})
+startQuiz();
+
 // const questions = 
 // [
 //     {
@@ -130,96 +223,3 @@
 //     }
 // })
 // startQuiz();
-
-let questionsElement = document.getElementById('question');
-let answersContainer = document.getElementById('btns-container');
-let nextBtn = document.getElementById('next-btn');
-let i = 0;
-let score = 0;
-let apiData ;
-
-function startQuiz(){
-    answersContainer.style.display = 'block';
-    showQuestions();
-}
-const showQuestions = () =>{
-    resetState()
-    fetch('https://opentdb.com/api.php?amount=10&type=multiple')
-    .then(respond => respond.json())
-    .then(data => {
-            if(data.response_code == 0){
-                console.log(data);
-                apiData = data;
-                let currentQuestion = data.results[i];
-                questionsElement.innerHTML = `${i+1}. ${currentQuestion.question}`;
-                let allAnswers = [...currentQuestion.incorrect_answers, currentQuestion.correct_answer]
-                allAnswers.sort( ()=> Math.random() -0.5 );
-    
-                allAnswers.forEach(answer => {
-                    const button = document.createElement('button');
-                    button.innerText = answer;
-                    button.classList.add('btn');
-                    answersContainer.appendChild(button);
-                    if(answer === currentQuestion.correct_answer){
-                        button.dataset.correct = 'true';
-                    }
-                    button.addEventListener('click',selectAnswer)
-                })
-            }
-    })
-    .catch(error => console.error('Error fetching data:', error));
-}
-
-function resetState(){
-    nextBtn.style.display = 'none';
-    while(answersContainer.firstChild){
-        answersContainer.removeChild(answersContainer.firstChild);
-    }
-}
-
-function selectAnswer(e){
-    let selectedBtn = e.target;
-    let isCorrect = selectedBtn.dataset.correct === 'true';
-    if(isCorrect){
-        score++;
-        selectedBtn.classList.add('correct');
-    }
-    else{
-        selectedBtn.classList.add('incorrect');
-    }
-    Array.from(answersContainer.children).forEach(button =>{
-        if(button.dataset.correct === 'true'){
-            button.classList.add('correct')
-        }
-        button.disabled = true;
-    })
-    nextBtn.style.display = 'block';
-}
-
-function showScore(){
-    answersContainer.style.display = 'none';
-    questionsElement.innerHTML = `you scored ${score} out of ${apiData.results.length}`;
-    nextBtn.innerText = 'Restart Quiz';
-    nextBtn.style.display = 'block';
-}
-
-function handleNextBtn(){
-    i++;
-    if(i < apiData.results.length){
-        showQuestions()
-    }
-    else{
-        showScore()
-    }
-}
-nextBtn.addEventListener('click',()=>{
-    if(i < apiData.results.length){
-        handleNextBtn()
-    }
-    else{
-        i = 0;
-        score =0;
-        startQuiz();
-    }
-})
-startQuiz();
