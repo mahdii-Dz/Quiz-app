@@ -7,34 +7,38 @@ let apiData ;
 
 function startQuiz(){
     answersContainer.style.display = 'block';
-    showQuestions();
+    fetchApi();
 }
-const showQuestions = () =>{
-    resetState()
+function fetchApi(){
     fetch('https://opentdb.com/api.php?amount=10&type=multiple')
     .then(respond => respond.json())
     .then(data => {
-            if(data.response_code == 0){
-                console.log(data);
-                apiData = data;
-                let currentQuestion = data.results[i];
-                questionsElement.innerHTML = `${i+1}. ${currentQuestion.question}`;
-                let allAnswers = [...currentQuestion.incorrect_answers, currentQuestion.correct_answer]
-                allAnswers.sort( ()=> Math.random() -0.5 );
-    
-                allAnswers.forEach(answer => {
-                    const button = document.createElement('button');
-                    button.innerText = answer;
-                    button.classList.add('btn');
-                    answersContainer.appendChild(button);
-                    if(answer === currentQuestion.correct_answer){
-                        button.dataset.correct = 'true';
-                    }
-                    button.addEventListener('click',selectAnswer)
-                })
-            }
+        if(data.response_code == 0){
+            console.log(data);
+            apiData = data;
+            showQuestions();
+        }
     })
     .catch(error => console.error('Error fetching data:', error));
+}
+const showQuestions = () =>{
+    resetState()
+    let currentQuestion = apiData.results[i];
+    questionsElement.innerHTML = `${i+1}. ${currentQuestion.question}`;
+    let allAnswers = [...currentQuestion.incorrect_answers, currentQuestion.correct_answer]
+    allAnswers.sort( ()=> Math.random() -0.5 );
+                
+    allAnswers.forEach(answer => {
+        const button = document.createElement('button');
+        button.innerText = answer;
+        button.classList.add('btn');
+        answersContainer.appendChild(button);
+        if(answer === currentQuestion.correct_answer){
+            button.dataset.correct = 'true';
+        }
+        button.addEventListener('click',selectAnswer)
+    })
+
 }
 
 function resetState(){
